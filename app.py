@@ -4,7 +4,7 @@ import io
 
 st.set_page_config(page_title="Daily Manpower Report", layout="wide")
 
-st.title("📊 Daily Manpower Report")
+st.title("📊 Daily Manpower Report- FREESIA")
 
 uploaded_file = st.file_uploader("Upload Daily Attendance Excel File", type=["xlsx"])
 
@@ -41,3 +41,14 @@ if uploaded_file:
         st.error(f"❌ Error processing file: {e}")
 else:
     st.info("👆 Please upload your Excel attendance sheet.")
+    # --- Footer ---
+st.markdown("---")
+st.markdown(
+    "<div style='text-align: center; font-size: 14px;'>"
+    "Developed by: <strong>Viraj Niroshan Gunarathna</strong><br>"
+    "This application is maintained under the authority and custody of Mr. Viraj Niroshan Gunarathna."
+    "For support or feedback, please contact: [Viraj.se@gmail.com or 0500586804392]"
+    "</div>",
+    unsafe_allow_html=True
+)
+
