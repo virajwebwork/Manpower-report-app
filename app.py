@@ -47,7 +47,9 @@ st.markdown(
     "<div style='text-align: center; font-size: 14px;'>"
     "Developed by: <strong>Viraj Niroshan Gunarathna</strong><br>"
     "This application is maintained under the authority and custody of Mr. Viraj Niroshan Gunarathna."
-    "For support or feedback, please contact: [Viraj.se@gmail.com or 0500586804392]"
+"</div>"
+"</div>"
+    "For support or feedback, please contact: Viraj.se@gmail.com or 0586804392"
     "</div>",
     unsafe_allow_html=True
 )
