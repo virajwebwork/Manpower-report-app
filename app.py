@@ -41,16 +41,24 @@ if uploaded_file:
         st.error(f"❌ Error processing file: {e}")
 else:
     st.info("👆 Please upload your Excel attendance sheet.")
-    # --- Footer ---
+    
+# --- Footer ---
 st.markdown("---")
 st.markdown(
-    "<div style='text-align: center; font-size: 14px;'>"
-    "Developed by: <strong>Viraj Niroshan Gunarathna</strong><br>"
-    "This application is maintained under the authority and custody of Mr. Viraj Niroshan Gunarathna."
-"</div>"
-""<div style='text-align: center; font-size: 12px;'>"
-    "For support or feedback, please contact: Viraj.se@gmail.com or 0586804392"
-    "</div>",
+    """
+    <div style='text-align: center; font-size: 14px;'>
+        Developed by: <strong>Viraj Niroshan Gunarathna</strong><br>
+        This application is maintained under the authority and custody of Mr. Viraj Niroshan Gunarathna.
+    </div>
+    <div style='text-align: center; font-size: 12px; margin-top: 10px;'>
+        For support or feedback, please contact: <a href='mailto:Viraj.se@gmail.com'>Viraj.se@gmail.com</a> | 📞 0586804392
+    </div>
+    <div style='text-align: center; font-size: 11px; margin-top: 10px; color: gray;'>
+        &copy; 2025 Viraj Niroshan Gunarathna. All rights reserved.
+    </div>
+    """,
     unsafe_allow_html=True
 )
+
+
 
