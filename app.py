@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📊 Daily Manpower Report - FREESIA</title>
+    <title>Daily Manpower Report - FREESIA</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         * {
@@ -193,7 +193,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📊 Daily Manpower Report - FREESIA</h1>
+            <h1>Daily Manpower Report - FREESIA</h1>
             <p>Process attendance data and generate group-wise manpower reports</p>
         </div>
         
@@ -201,7 +201,7 @@
         <div class="stage">
             <h2>Stage 1: Upload Original Attendance Sheet</h2>
             <div class="upload-area" onclick="document.getElementById('stage1-file').click()" id="upload1">
-                <p>📥 Click here or drag & drop your Excel file</p>
+                <p>Click here or drag & drop your Excel file</p>
                 <p style="color: #7f8c8d; margin-top: 10px;">Supported: .xlsx files</p>
             </div>
             <input type="file" id="stage1-file" accept=".xlsx" onchange="processStage1(event)">
@@ -214,7 +214,7 @@
             <h2>Stage 2: Group-wise Summary</h2>
             <div id="stage2-content">
                 <div class="alert alert-info">
-                    👆 Complete Stage 1 first to enable group-wise processing
+                    Complete Stage 1 first to enable group-wise processing
                 </div>
             </div>
         </div>
