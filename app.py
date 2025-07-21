@@ -4,7 +4,7 @@ import io
 
 st.set_page_config(page_title="Daily Manpower Report", layout="wide")
 
-st.title("📊 Daily Manpower Report- FREESIA")
+st.title("📊 Daily Manpower Report - FREESIA")
 
 uploaded_file = st.file_uploader("Upload Daily Attendance Excel File", type=["xlsx"])
 
@@ -47,25 +47,26 @@ if uploaded_file:
         st.subheader("🌙 Night Present Pivot Table")
         st.dataframe(pivot_night, use_container_width=True)
 
-        # Create Excel file
+        # Create Excel file with both tables
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
             pivot_day.to_excel(writer, sheet_name='Day_Present')
             pivot_night.to_excel(writer, sheet_name='Night_Present')
         output.seek(0)
 
-
         # Download button
-        output = io.BytesIO()
-        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            pivot_table.to_excel(writer, sheet_name='Manpower Report Day & Night Shift')
-        st.download_button("📥 Download Excel Report", output.getvalue(), "Manpower_Report-Day&Night.xlsx")
+        st.download_button(
+            label="📥 Download Excel Report",
+            data=output,
+            file_name="Manpower_Report-Day&Night.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
 
     except Exception as e:
         st.error(f"❌ Error processing file: {e}")
 else:
     st.info("👆 Please upload your Excel attendance sheet.")
-    
+
 # --- Footer ---
 st.markdown("---")
 st.markdown(
@@ -83,6 +84,3 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
-
-
