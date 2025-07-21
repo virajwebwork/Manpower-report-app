@@ -64,14 +64,14 @@ if uploaded_file:
         st.dataframe(pivot_night, use_container_width=True)
 
         # --- Group-wise building total function ---
-        def process_group_building(pivot_df):
-            df = pivot_df.copy()
-            df.reset_index(inplace=True)
-            df['Main Group'] = df['Working as'].map(sub_trade_to_group)
-            df = df.dropna(subset=['Main Group'])  # Only mapped trades
-            df_grouped = df.groupby('Main Group').sum(numeric_only=True)
-            df_grouped.loc['Total'] = df_grouped.sum()
-            return df_grouped.reset_index()
+       def process_group_building(df):
+    df = df.reset_index()  # Fix: pivot index to column
+    df['Main Group'] = df['Working as'].map(sub_trade_to_group)
+    df = df.dropna(subset=['Main Group'])  # Remove unmatched rows
+    building_cols = df.columns[1:-1]  # Skip 'Working as' and 'Main Group'
+    df_grouped = df.groupby('Main Group')[building_cols].sum()
+    df_grouped.loc['Total'] = df_grouped.sum()
+    return df_grouped.reset_index()
 
         # Group-wise building totals
         group_building_day = process_group_building(pivot_day)
