@@ -19,23 +19,47 @@ if uploaded_file:
         df_cleaned = df[['Working as', 'Building No', 'Status']].copy()
         df_cleaned.dropna(subset=['Working as', 'Building No', 'Status'], inplace=True)
 
-        # Create pivot
-        pivot_table = pd.pivot_table(
-            df_cleaned,
+        # Split into Day Present and Night Present
+        df_day = df_cleaned[df_cleaned['Status'].str.lower() == 'day present']
+        df_night = df_cleaned[df_cleaned['Status'].str.lower() == 'night present']
+
+        # Create pivot tables
+        pivot_day = pd.pivot_table(
+            df_day,
             index='Working as',
-            columns=['Building No', 'Status'],
+            columns='Building No',
             aggfunc='size',
             fill_value=0
         )
 
-        st.success("✅ Pivot table generated!")
-        st.dataframe(pivot_table, use_container_width=True)
+        pivot_night = pd.pivot_table(
+            df_night,
+            index='Working as',
+            columns='Building No',
+            aggfunc='size',
+            fill_value=0
+        )
+
+        # Display pivot tables
+        st.subheader("📊 Day Present Pivot Table")
+        st.dataframe(pivot_day, use_container_width=True)
+
+        st.subheader("🌙 Night Present Pivot Table")
+        st.dataframe(pivot_night, use_container_width=True)
+
+        # Create Excel file
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            pivot_day.to_excel(writer, sheet_name='Day_Present')
+            pivot_night.to_excel(writer, sheet_name='Night_Present')
+        output.seek(0)
+
 
         # Download button
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            pivot_table.to_excel(writer, sheet_name='Manpower Report')
-        st.download_button("📥 Download Excel Report", output.getvalue(), "Manpower_Report.xlsx")
+            pivot_table.to_excel(writer, sheet_name='Manpower Report Day & Night Shift')
+        st.download_button("📥 Download Excel Report", output.getvalue(), "Manpower_Report-Day&Night.xlsx")
 
     except Exception as e:
         st.error(f"❌ Error processing file: {e}")
