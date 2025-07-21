@@ -22,8 +22,8 @@ if uploaded_file_stage1:
         df_cleaned.dropna(subset=['Working as', 'Building No', 'Status'], inplace=True)
 
         # Split into Day Present and Night Present
-        df_day = df_cleaned[df_cleaned['Status'].str.lower() == 'day present']
-        df_night = df_cleaned[df_cleaned['Status'].str.lower() == 'night present']
+        df_day = df_cleaned[df_cleaned['Status'].str.lower() == 'DAY PRESENT']
+        df_night = df_cleaned[df_cleaned['Status'].str.lower() == 'SUN NIGHT PRESENT']
 
         # Create pivot tables
         pivot_day = pd.pivot_table(
