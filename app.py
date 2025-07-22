@@ -157,40 +157,52 @@ if 'pivot_day' in st.session_state or 'pivot_night' in st.session_state:
             if pivot_df.empty or len(df_original) == 0:
                 return pd.DataFrame()
             
-            # Remove total row if exists
-            if 'Total' in pivot_df.index:
-                pivot_df = pivot_df.drop('Total')
+            # Remove total row and column if exists
+            pivot_clean = pivot_df.copy()
+            if 'Total' in pivot_clean.index:
+                pivot_clean = pivot_clean.drop('Total')
+            if 'Total' in pivot_clean.columns:
+                pivot_clean = pivot_clean.drop('Total', axis=1)
             
-            # Create group mapping
+            # Get building columns (these will become our columns in final table)
+            building_columns = list(pivot_clean.columns)
+            
+            # Initialize group data - Groups as rows, Buildings as columns
             group_data = {}
-            building_columns = [col for col in pivot_df.columns if col != 'Total']
             
-            # Initialize groups
-            for group in set(sub_trade_to_group.values()):
+            # Get all unique groups
+            all_groups = set(sub_trade_to_group.values())
+            
+            # Initialize all groups with zero values for each building
+            for group in all_groups:
                 group_data[group] = {building: 0 for building in building_columns}
             
-            # Sum trades into groups
-            for trade in pivot_df.index:
+            # Process each trade (row in original pivot)
+            for trade in pivot_clean.index:
                 if trade in sub_trade_to_group:
+                    # Map trade to group
                     group = sub_trade_to_group[trade]
+                    # Add values for each building
                     for building in building_columns:
-                        if building in pivot_df.columns:
-                            group_data[group][building] += pivot_df.loc[trade, building]
+                        if building in pivot_clean.columns:
+                            group_data[group][building] += pivot_clean.loc[trade, building]
                 else:
-                    # Handle unmapped trades
+                    # Handle unmapped trades - treat as separate group
                     if trade not in group_data:
                         group_data[trade] = {building: 0 for building in building_columns}
                     for building in building_columns:
-                        if building in pivot_df.columns:
-                            group_data[trade][building] = pivot_df.loc[trade, building]
+                        if building in pivot_clean.columns:
+                            group_data[trade][building] = pivot_clean.loc[trade, building]
             
-            # Create DataFrame
-            group_df = pd.DataFrame(group_data).T
+            # Convert to DataFrame - Groups as index (rows), Buildings as columns
+            group_df = pd.DataFrame.from_dict(group_data, orient='index')
             
-            # Add totals
+            # Add totals if DataFrame is not empty
             if not group_df.empty:
-                group_df.loc['Total'] = group_df.sum()
+                # Add total column (sum of each row)
                 group_df['Total'] = group_df.sum(axis=1)
+                # Add total row (sum of each column)
+                group_df.loc['Total'] = group_df.sum()
             
             return group_df
         
