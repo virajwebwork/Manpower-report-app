@@ -164,18 +164,22 @@ if 'pivot_day' in st.session_state or 'pivot_night' in st.session_state:
             if 'Total' in pivot_clean.columns:
                 pivot_clean = pivot_clean.drop('Total', axis=1)
             
-            # Get building columns (these will become our columns in final table)
+            # Get building columns (these will become our rows in final table)
             building_columns = list(pivot_clean.columns)
             
-            # Initialize group data - Groups as rows, Buildings as columns
-            group_data = {}
-            
-            # Get all unique groups
+            # Get all unique groups (these will become our columns in final table)
             all_groups = set(sub_trade_to_group.values())
             
-            # Initialize all groups with zero values for each building
-            for group in all_groups:
-                group_data[group] = {building: 0 for building in building_columns}
+            # Initialize building data - Buildings as rows, Groups as columns
+            building_data = {}
+            
+            # Initialize all buildings with zero values for each group
+            for building in building_columns:
+                building_data[building] = {group: 0 for group in all_groups}
+                # Also initialize for unmapped trades
+                for trade in pivot_clean.index:
+                    if trade not in sub_trade_to_group:
+                        building_data[building][trade] = 0
             
             # Process each trade (row in original pivot)
             for trade in pivot_clean.index:
@@ -185,23 +189,21 @@ if 'pivot_day' in st.session_state or 'pivot_night' in st.session_state:
                     # Add values for each building
                     for building in building_columns:
                         if building in pivot_clean.columns:
-                            group_data[group][building] += pivot_clean.loc[trade, building]
+                            building_data[building][group] += pivot_clean.loc[trade, building]
                 else:
-                    # Handle unmapped trades - treat as separate group
-                    if trade not in group_data:
-                        group_data[trade] = {building: 0 for building in building_columns}
+                    # Handle unmapped trades - treat as separate column
                     for building in building_columns:
                         if building in pivot_clean.columns:
-                            group_data[trade][building] = pivot_clean.loc[trade, building]
+                            building_data[building][trade] = pivot_clean.loc[trade, building]
             
-            # Convert to DataFrame - Groups as index (rows), Buildings as columns
-            group_df = pd.DataFrame.from_dict(group_data, orient='index')
+            # Convert to DataFrame - Buildings as index (rows), Groups as columns
+            group_df = pd.DataFrame.from_dict(building_data, orient='index')
             
             # Add totals if DataFrame is not empty
             if not group_df.empty:
-                # Add total column (sum of each row)
+                # Add total column (sum of each row - total workers per building)
                 group_df['Total'] = group_df.sum(axis=1)
-                # Add total row (sum of each column)
+                # Add total row (sum of each column - total workers per group across all buildings)
                 group_df.loc['Total'] = group_df.sum()
             
             return group_df
