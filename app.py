@@ -17,7 +17,7 @@ sub_trade_to_group = {
     'Chw-Pipe-Fitter': 'HVAC',
     'Gi Duct Fabricator': 'HVAC',
     'Insulator': 'HVAC',
-    'Welder': 'Welder',
+    'Welder': 'Welder',  # This will be handled properly now
     'Asst Plumber': 'PLU',
     'Plumber': 'PLU',
     'Fire Alarm-Helper': 'FA',
@@ -28,10 +28,23 @@ sub_trade_to_group = {
     'Fire Fighting Technicans': 'FF',
     'Fire Sealant Technician': 'F/S',
     'Elv Technician': 'ELV',
-    'Lpg Technician-Pipe Fitter': 'LPG Technician/Pipe Fitter',
-    'Lpg  Helper': 'LPG Helper',
-    'Welder-Cs-Lpg-Technician': 'LPG Welder'
+    'Lpg Technician-Pipe Fitter': 'LPG  Technician,Helper & LPG Welder',
+    'Lpg  Helper': 'LPG  Technician,Helper & LPG Welder',
+    'Welder-Cs-Lpg-Technician': 'LPG  Technician,Helper & LPG Welder'
 }
+
+# Define the desired column order
+DESIRED_COLUMN_ORDER = [
+    'ELE',
+    'HVAC', 
+    'Welder',
+    'PLU',
+    'FA',
+    'FF',
+    'F/S',
+    'ELV',
+    'LPG  Technician,Helper & LPG Welder'
+]
 
 # --------------------- STAGE 1 ---------------------
 st.header("Stage 1: Upload Original Attendance Sheet")
@@ -167,19 +180,12 @@ if 'pivot_day' in st.session_state or 'pivot_night' in st.session_state:
             # Get building columns (these will become our rows in final table)
             building_columns = list(pivot_clean.columns)
             
-            # Get all unique groups (these will become our columns in final table)
-            all_groups = set(sub_trade_to_group.values())
-            
             # Initialize building data - Buildings as rows, Groups as columns
             building_data = {}
             
-            # Initialize all buildings with zero values for each group
+            # Initialize all buildings with zero values for each desired group
             for building in building_columns:
-                building_data[building] = {group: 0 for group in all_groups}
-                # Also initialize for unmapped trades
-                for trade in pivot_clean.index:
-                    if trade not in sub_trade_to_group:
-                        building_data[building][trade] = 0
+                building_data[building] = {group: 0 for group in DESIRED_COLUMN_ORDER}
             
             # Process each trade (row in original pivot)
             for trade in pivot_clean.index:
@@ -191,16 +197,43 @@ if 'pivot_day' in st.session_state or 'pivot_night' in st.session_state:
                         if building in pivot_clean.columns:
                             building_data[building][group] += pivot_clean.loc[trade, building]
                 else:
-                    # Handle unmapped trades - treat as separate column
-                    for building in building_columns:
-                        if building in pivot_clean.columns:
-                            building_data[building][trade] = pivot_clean.loc[trade, building]
+                    # Handle unmapped trades
+                    # Check if it's a welder-related trade that should go to 'Welder' group
+                    if 'welder' in trade.lower():
+                        for building in building_columns:
+                            if building in pivot_clean.columns:
+                                building_data[building]['Welder'] += pivot_clean.loc[trade, building]
+                    else:
+                        # For other unmapped trades, add them as separate columns
+                        # But first check if this column should be in our desired order
+                        if trade not in DESIRED_COLUMN_ORDER:
+                            # Add to each building's data
+                            for building in building_columns:
+                                if trade not in building_data[building]:
+                                    building_data[building][trade] = 0
+                                if building in pivot_clean.columns:
+                                    building_data[building][trade] = pivot_clean.loc[trade, building]
             
             # Convert to DataFrame - Buildings as index (rows), Groups as columns
             group_df = pd.DataFrame.from_dict(building_data, orient='index')
             
-            # Add totals if DataFrame is not empty
+            # Reorder columns according to desired sequence
             if not group_df.empty:
+                # Get existing columns that are in our desired order
+                existing_desired_cols = [col for col in DESIRED_COLUMN_ORDER if col in group_df.columns]
+                
+                # Get any additional columns not in desired order
+                other_cols = [col for col in group_df.columns if col not in DESIRED_COLUMN_ORDER]
+                
+                # Combine in desired order: desired columns first, then others
+                final_column_order = existing_desired_cols + other_cols
+                
+                # Reorder the dataframe
+                group_df = group_df[final_column_order]
+                
+                # Remove columns that have all zeros (optional - uncomment if you want to hide empty groups)
+                # group_df = group_df.loc[:, (group_df != 0).any(axis=0)]
+                
                 # Add total column (sum of each row - total workers per building)
                 group_df['Total'] = group_df.sum(axis=1)
                 # Add total row (sum of each column - total workers per group across all buildings)
